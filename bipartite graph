@@ -1,0 +1,20 @@
+//bipartite graph
+
+bool col[MN];
+
+bool dfs(int node,int c){
+	vis[node]=1;
+	col[node]=c;
+	
+	for(auto child: adj[node]){
+		if(vis[child]==0){
+			if(dfs(child,c^1)==false){
+				return false;
+			}
+		}
+		else{
+			if(col[child]==col[node]) return false;
+		}
+	}
+	return true;
+}
