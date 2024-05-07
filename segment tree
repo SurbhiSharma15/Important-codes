@@ -27,6 +27,26 @@ int query(int ind, int lo, int hi, int l, int r){
 
     return max(left,right);
 }
+
+//--------------single update
+// -----------storing sum in given range
+
+void pointupdate(int ind, int lo, int hi, int node, int val){
+    if(lo==hi) seg[ind]+=val ;
+    else{
+        int mid=(lo+hi)/2 ;
+        if(node<=mid && node>=lo){
+            pointupdate(2*ind+1,lo,mid,node,val) ;
+        }
+        else pointupdate(2*ind+2, mid+1,high,node,val) ;
+
+        seg[ind]= seg[ind*2+1]+ seg[ind*2+2] ;
+    }
+}
+
+
+
+
 void solve(){
     int n ;
     cin >> n ;
