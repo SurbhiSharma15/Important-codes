@@ -45,6 +45,56 @@ void pointupdate(int ind, int lo, int hi, int node, int val){
 }
 
 
+//------------------range update
+// l,r ->range to inrease value with val
+
+void rangeupdate(int ind, int lo, int hi, int l, int r, int val){
+    if(lazy[ind]!=0){
+        seg[ind]+= (hi-lo+1)*lazy[ind] ;
+        if(lo!=hi){
+            lazy[2*ind+1]+= lazy[ind] ;
+            lazy[2*ind+2]+= lazy[ind] ;
+        }
+        lazy[ind]=0 ;
+    }
+
+    if(lo>r || hi<l || lo>hi) return ;
+
+    if(l<=lo && hi<=r){
+        seg[ind]+= (hi-lo+1)*val ;
+        if(lo!=hi){
+            lazy[2*ind+1]+=val;
+            lazy[2*ind+2]+=val;
+        }
+        return;
+    }
+
+    int mid=(lo+hi)/2;
+    rangeupdate(2*ind+1,lo,mid,l,r,val);
+    rangeupdate(2*ind+2, mid+1, hi,l,r,val);
+    seg[ind]= seg[2*ind+1]+ seg[2*ind+2] ;
+}
+
+int querysumlazy(int ind, int lo, int hi, int l, int r, int val){
+    if(lazy[ind]!=0){
+        seg[ind]+=(hi-lo+1)*lazy[ind] ;
+        if(lo!=hi){
+            lazy[2*ind+1]+= lazy[ind] ;
+            lazy[2*ind+2]+=lazy[ind] ;
+        }
+        lazy[ind]=0 ;
+    }
+    if(r<lo || l>hi || l>r) return 0;
+    if(l<=lo && r>=hi){
+        return seg[ind];
+    }
+    int mid=(lo+hi)/2 ;
+    return querysumlazy(2*ind+1,lo,mid,l,r,val)+
+    querysumlazy(2*ind+2, mid+1,hi,l,r,val) ;
+
+    
+}
+
 
 
 void solve(){
