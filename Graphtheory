@@ -1,0 +1,613 @@
+#include <bits/stdc++.h>
+#include<string>
+using namespace std;
+#define forf(i, k, n)  for (int i = k; i < n; i++)
+#define forb(i, n, k)  for (int i = n - 1; i >= k; i--)
+#define YES            cout << "YES\n";
+#define NO             cout << "NO\n";
+#define yes            cout << "Yes\n";
+#define no             cout << "No\n";
+#define seti           set<int>
+#define useti          unordered_set<int>
+#define mapii          map<int, int>
+#define umapii         unordered_map<int, int>
+#define vpi            vector <pair<int, int>>
+#define vi             vector<int>
+#define pi             pair<int, int>
+#define vvi            vector<vector<int>>
+#define pb             push_back 
+#define sz             size()
+#define mp             make_pair
+#define fi             first
+#define se             second
+#define all(var)       var.begin(), var.end()
+#define present(c, x)  (c.find(x) != c.end())
+#define dl             cout << "\n";
+#define desc           greater<int>()
+#define bpop           __builtin_popcount
+#define imin           LLONG_MIN
+#define imax           LLONG_MAX
+int M = 1e9 + 7;
+const int MN = 4e5 + 1;
+
+//1. graph theory adjacent vectors  + dfs code
+
+vi adj[MN];
+bool vis[MN];
+int dist[MN];
+int gcd_dfs[MN]; 
+
+//reset adjacency matrix
+
+auto reset = [](int n ){
+            for(int i=1 ; i<=n ; i++ ) {
+                adj[i].clear(); 
+                
+            } 
+                ans.clear() ; 
+        } ;
+
+//--------------------basic dfs
+
+void dfs(int node  ){
+    vis[node] = 1 ;
+    cout<<node<<" ";
+    for(auto child  : adj[node] ) {
+        if(vis[child]==0){
+            dfs(child) ;
+        }
+    }
+}
+
+
+// single source shortest path
+
+void sssp(int node,int d){
+    vis[node]=1;
+    dist[node]=d;
+
+    for(auto child: adj[node]){
+        if(vis[child]==0){
+            sssp( child,dist[node]+1);
+        }
+    }
+}
+
+
+
+//---------------------calculating gcd of subtree
+
+int Dfs(int node){
+    vis[node]=1;
+    int g=node;
+    for(auto child: adj[node]){
+        if(vis[child]==0) 
+        {
+            g=__gcd(g,Dfs(child));   
+        }
+    }
+    gcd_dfs[node]=g;
+    return gcd_dfs[node];
+    
+}
+
+
+//bipartite graph
+
+bool col[MN];
+
+bool dfs(int node,int c){
+	vis[node]=1;
+	col[node]=c;
+	
+	for(auto child: adj[node]){
+		if(vis[child]==0){
+			if(dfs(child,c^1)==false){
+				return false;
+			}
+		}
+		else{
+			if(col[child]==col[node]) return false;
+		}
+	}
+	return true;
+}
+
+//-----------------bfs==========================================
+
+vi adj[10005];
+int vis[10005];
+int dist[10005];
+
+void BFS(int src){
+
+    queue<int> q;
+    q.push(src);
+    vis[src]=1;
+    dist[src]=0;
+    while(!q.empty()){
+        int curr=q.front();
+        q.pop();
+        for(int child: adj[curr]){
+            if(vis[child]==0){
+                q.push(child);
+                dist[child]=dist[curr]+1;
+                vis[child]=1;
+            }
+        }
+    }
+}
+
+	//call this in void solve()
+	
+    BFS(1);
+    cout<<dist[n]<<endl;
+    
+    
+    
+//    --------------------bipartite full code
+
+vi ar[2001];
+int vis[2001];
+int col[2001];
+
+bool dfs(int n, int c){
+    vis[n]=1;
+    col[n]=c;
+    for(auto child: ar[n]){
+        if(vis[child]==0){
+            bool res=dfs(child,1^c);
+            if(res==false) return false;
+        }
+        else{
+            if(col[n]==col[child]) return false;
+        }
+    }
+    return true;
+}
+
+void solve(){
+    int t;
+    cin >> t;
+    int m , n, a , b;
+    for(int tc=1;tc<=t;tc++){
+        cin >> n >> m;
+        forf(i,0,n){
+            ar[i].clear();
+            vis[i]=0;
+        }
+        forf(i,0,m){
+            cin >> a >> b;
+            ar[a].pb(b);
+            ar[b].pb(a);
+        }
+        bool flag= true;
+        for(int i=1;i<=n;i++){
+            if(vis[i]==0){
+                bool res= dfs(i,0);
+                if(res==false) flag=false;
+            }
+        }
+        if(flag==false) NO
+        else YES
+    }
+    
+}
+
+
+// ----------------------cycle detection in undirected graph
+
+bool dfs(int n, int par){
+    vis[n]=1;
+    for(auto child: ar[n]){
+        if(vis[child]==0){
+            if(dfs(child,n)==true) return true;
+        }
+        else{
+            if(child!=par) return true;
+        }
+    }
+    return false;
+}
+
+
+
+//------------------------kruskals algorithm
+
+
+// ---------------------disjoint set union (dsu)
+struct DSU{
+ 
+        vector<int> parent ;
+        vector<int> size ;
+        int comp;
+        
+        DSU(int N){
+                parent.resize(N+1,0);
+                size.resize(N+1,0);
+                comp = N;
+                for(int i=1;i<=N;i++){
+                        make_set(i) ;
+                }
+        }
+        void make_set(int v){
+                parent[v] = v ;
+                size[v] = 1 ;
+        }
+ 
+        int find_set(int v){
+                if(parent[v] == v){
+                        return v ;
+                }
+                return parent[v] = find_set(parent[v]);
+        }
+        void union_set(int a, int b){
+                a = find_set(a) ;
+                b = find_set(b) ;
+ 
+                if(a!=b){
+                        if(size[a]> size[b]){
+                                swap(a, b);
+                        }
+                        parent[a] =  parent[b] ;
+                        size[b]   += size[a];
+                        comp--;
+                }
+ 
+        }
+ 
+        int count_comp(){
+                return comp;
+        }
+ 
+        int size_set(int v){
+                return size[find_set(v)] ;
+        }
+};
+ 
+
+ 
+struct edge{
+        int u , v , w ;
+        edge(int u , int v , int w ){
+                this->u = u ;
+                this->v = v ;
+                this->w = w ;
+        }
+};
+ 
+bool comp( edge &a , edge &b ){
+        return a.w < b.w ;
+}
+ 
+void solve(){
+ 
+        int n , m ;
+        cin >> n >> m ;
+ 
+        vector<edge> edg ;
+ 
+        while(m--){
+                int u , v , w ;
+                cin >> u >> v >> w ;
+                edge newedge(u,v,w) ;
+                edg.pb(newedge) ;
+        }
+ 
+        sort(all(edg) , comp ) ;
+ 
+        int mst_sum = 0 ;
+ 
+        DSU vec(n) ;
+ 
+        for(auto x : edg ){
+                int u = x.u ;
+                int v = x.v ;
+                int w = x.w ;
+ 
+                u = vec.find_set(u) ;
+                v = vec.find_set(v) ;
+ 
+                if(u!=v){
+                        mst_sum += w ;
+                        vec.union_set(u,v) ;
+                }
+        }
+ 
+        cout << mst_sum << endl ;
+ 
+}
+
+
+
+// ------------------------prims algorithm
+
+struct edge {
+
+        int to, w;
+        edge(int a, int b){
+                to = a;
+                w= b;
+        }
+
+};
+
+edge make_edge(int a, int b){
+        edge edg(a,b);
+        return edg;
+}
+
+void solve(){
+
+        int n, m;
+        cin >> n >> m;
+
+        vector<edge> adj[n+1];
+
+        while(m--){
+                int u, v, w;
+                cin >> u >> v >> w;
+                adj[u].pb({v, w});
+                adj[v].push_back({u,w});
+        }
+        vector<bool> vis(n+1) ;
+
+        priority_queue<pi, vector<pi>, greater<pi>> pq;
+
+        pq.push({0,1});
+
+        int ans=0;
+
+        while(pq.sz){
+                pi temp = pq.top();
+                pq.pop();
+
+                if(vis[temp.se]==1) continue;
+
+                vis[temp.se]=1;
+                ans+= temp.fi;
+
+                for(auto x: adj[temp.se]){
+                        if(vis[x.to]==0){
+                                pq.push({x.w,x.to});
+                        }
+                }
+
+        }
+
+        cout<<ans<<endl;
+
+}
+
+
+//-----------------------toposort using bfs
+
+vi ind(MN);
+vi adj[MN];
+
+vi toposort(int n){
+        vi ans;
+
+        priority_queue<int,vi, greater<int>> qu;
+
+        for(int i =1 ; i<=n ;i++ ){
+                if(ind[i]==0){
+                        qu.push(i);
+                }
+        }
+        while(qu.sz){
+                int tp= qu.top();
+                qu.pop();
+                ans.pb(tp);
+                for(auto child: adj[tp]){
+                        ind[child]--;
+                        if(ind[child]==0){
+                                qu.push(child);
+                        }
+                }
+        }
+        if(ans.sz<n){
+                ans.clear();
+        }
+        return ans;
+
+
+}
+
+
+//-------------------------dijkstra surbhi
+
+const int MN=4e5 + 1 ;
+const int INF = 1e9+10 ;
+
+int dijkstra(int source, int n, vector<pair<int,int>> adj[MN]){
+
+        vi vis(MN,0);
+        vi dist(MN,INF);
+        set<pair<int,int>> se;
+        se.insert({0, source});
+        dist[source]=0;
+
+        while(se.sz){
+                auto x = *se.begin();
+                int node = x.se;
+                if(vis[node]) continue;
+                se.erase(se.begin());
+                vis[node]=1;
+
+                for(auto child : adj[node]){
+                        if(dist[child.fi]> dist[node] + child.se){
+                                dist[child.fi] = dist[node]+child.se;
+                                se.insert({dist[child.fi] , child.fi});
+                        }
+                }
+
+        }
+        int ans=0;
+        for(int i=1;i<=n;i++){
+                if(dist[i]==INF){
+                             return -1;   
+                }
+                ans= max(ans,dist[i]);
+        }
+        return ans;
+
+
+}
+
+
+int networkDelayTime(vector<vector<int>>& times, int n, int k) {
+        vector<pair<int,int>> adj[MN];
+        for(auto vec: times){
+                adj[vec[0]].push_back(vec[1], vec[2]) ;
+        }
+}
+
+//===================================================================================================
+
+
+//dijkstra algorithm
+
+// A C++ program for Dijkstra's single source shortest path algorithm.
+// The program is for adjacency matrix representation of the graph
+#include <iostream>
+using namespace std;
+#include <limits.h>
+
+// Number of vertices in the graph
+#define V 9
+
+// A utility function to find the vertex with minimum distance value, from
+// the set of vertices not yet included in shortest path tree
+int minDistance(int dist[], bool sptSet[])
+{
+  
+    // Initialize min value
+    int min = INT_MAX, min_index;
+
+    for (int v = 0; v < V; v++)
+        if (sptSet[v] == false && dist[v] <= min)
+            min = dist[v], min_index = v;
+
+    return min_index;
+}
+
+// A utility function to print the constructed distance array
+void printSolution(int dist[])
+{
+    cout <<"Vertex \t Distance from Source" << endl;
+    for (int i = 0; i < V; i++)
+        cout  << i << " \t\t"<<dist[i]<< endl;
+}
+
+// Function that implements Dijkstra's single source shortest path algorithm
+// for a graph represented using adjacency matrix representation
+void dijkstra(int graph[V][V], int src)
+{
+    int dist[V]; // The output array.  dist[i] will hold the shortest
+    // distance from src to i
+
+    bool sptSet[V]; // sptSet[i] will be true if vertex i is included in shortest
+    // path tree or shortest distance from src to i is finalized
+
+    // Initialize all distances as INFINITE and stpSet[] as false
+    for (int i = 0; i < V; i++)
+        dist[i] = INT_MAX, sptSet[i] = false;
+
+    // Distance of source vertex from itself is always 0
+    dist[src] = 0;
+
+    // Find shortest path for all vertices
+    for (int count = 0; count < V - 1; count++) {
+        // Pick the minimum distance vertex from the set of vertices not
+        // yet processed. u is always equal to src in the first iteration.
+        int u = minDistance(dist, sptSet);
+
+        // Mark the picked vertex as processed
+        sptSet[u] = true;
+
+        // Update dist value of the adjacent vertices of the picked vertex.
+        for (int v = 0; v < V; v++)
+
+            // Update dist[v] only if is not in sptSet, there is an edge from
+            // u to v, and total weight of path from src to  v through u is
+            // smaller than current value of dist[v]
+            if (!sptSet[v] && graph[u][v] && dist[u] != INT_MAX
+                && dist[u] + graph[u][v] < dist[v])
+                dist[v] = dist[u] + graph[u][v];
+    }
+
+    // print the constructed distance array
+    printSolution(dist);
+}
+
+
+-----------------------bellman ford algorithm ------------------------
+//helps u to detect negative cycle
+//applicable in directed graph
+//if its a undirected graph, change it to two side directed graph
+//relax all edges n-1 times sequentially
+//relax: if(dist[u]+wt < dist[v]) dist[v]= dist[u]+ wt
+
+
+
+
+// driver program to test above function
+int main()
+{
+  
+    /* Let us create the example graph discussed above */
+    int graph[V][V] = { { 0, 4, 0, 0, 0, 0, 0, 8, 0 },
+                        { 4, 0, 8, 0, 0, 0, 0, 11, 0 },
+                        { 0, 8, 0, 7, 0, 4, 0, 0, 2 },
+                        { 0, 0, 7, 0, 9, 14, 0, 0, 0 },
+                        { 0, 0, 0, 9, 0, 10, 0, 0, 0 },
+                        { 0, 0, 4, 14, 10, 0, 2, 0, 0 },
+                        { 0, 0, 0, 0, 0, 2, 0, 1, 6 },
+                        { 8, 11, 0, 0, 0, 0, 1, 0, 7 },
+                        { 0, 0, 2, 0, 0, 0, 6, 7, 0 } };
+
+    dijkstra(graph, 0);
+
+    return 0;
+}
+
+
+
+
+void solve(){
+
+
+    int n,m;
+    cin >> n >> m;
+
+    forf(i,1,n+1){
+        adj[i].clear();
+        vis[i] = 0 ;
+    }
+
+	//making adjacency list
+
+        while(m--){
+        int x,y;
+        cin >> x >> y;
+        adj[x].pb(y);
+        adj[y].pb(x);
+    }
+
+    dfs(1  );
+
+}
+
+
+
+int main(){
+
+	solve();
+
+
+
+
+
+    return 0;
+}
